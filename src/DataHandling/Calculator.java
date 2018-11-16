@@ -2,6 +2,7 @@ package DataHandling;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.LinkedList;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
@@ -9,40 +10,43 @@ public class Calculator implements CalculatorInterface {
 
     @Override
     public String clearInputString(String input) {
-        return input.replaceAll("[^\\d\\+\\-\\*\\/\\(\\)]*", "");
+        return input.replaceAll("[^\\d\\+\\-\\*\\/]*", "");
     }
 
     @Override
     public String getPolskaRecord(String input) {
-        StringBuilder stringBuilderOperations = new StringBuilder();
+        //StringBuilder stringBuilderOperations = new StringBuilder();
+        LinkedList<Character> linkedListOperations = new LinkedList<>();
         StringBuilder stringBuilderResult = new StringBuilder();
         char previousOperation;
 
         for (char currentSymbol : input.toCharArray()) {
             if (isOperation(currentSymbol)) {
-                while (stringBuilderOperations.length() > 0) {
-                    previousOperation = stringBuilderOperations.substring(stringBuilderOperations.length() - 1).charAt(0);
+                if (linkedListOperations.isEmpty()) {
+                    stringBuilderResult.append(" ");
+                    linkedListOperations.add(currentSymbol);
+                } else {
+                    previousOperation = linkedListOperations.pollLast();
                     if (getOperationPriority(currentSymbol) <= getOperationPriority(previousOperation)) {
                         stringBuilderResult.append(" ");
+                        linkedListOperations.addLast(currentSymbol);
                         stringBuilderResult.append(previousOperation);
                         stringBuilderResult.append(" ");
-                        stringBuilderOperations.setLength(stringBuilderOperations.length() - 1);
                     } else {
                         stringBuilderResult.append(" ");
-                        break;
+                        linkedListOperations.addFirst(currentSymbol);
+                        linkedListOperations.addLast(previousOperation);
                     }
                 }
-                stringBuilderOperations.append(currentSymbol);
-                stringBuilderResult.append(" ");
             } else {
                 stringBuilderResult.append(currentSymbol);
             }
         }
-
-        for (char operation : stringBuilderOperations.toString().toCharArray()) {
+        for (char operation : linkedListOperations) {
             stringBuilderResult.append(" ");
             stringBuilderResult.append(operation);
         }
+
         return stringBuilderResult.toString();
     }
 
